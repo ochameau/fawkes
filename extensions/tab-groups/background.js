@@ -1,6 +1,6 @@
 'use strict';
 
-let DEBUG = true;
+let DEBUG = false;
 if (!DEBUG) {
   dump = () => {};
 }
@@ -34,19 +34,21 @@ groups.forEach(group => {
 });
 
 // Update all tabs visibility immediately
-select(current);
+select(current, true);
 
 function create(name) {
   groups.push({ name, tabs: [] });
   save();
 }
-function select(position) {
+function select(position, cleanup) {
   current = position;
   let { name, tabs, active } = groups[position];
   chrome.tabs.query({}, function (list) {
     for (let t of list) {
       let id = t.sessionId;
       let visible = tabs.includes(id);
+      // Visible is for visible in the tab strip
+      // Active is for currently selected and content is visible in the deck
       chrome.tabs.update(t.id, { visible, active: active == id } );
     }
   });
@@ -57,11 +59,19 @@ function save() {
 }
 
 chrome.tabs.onCreated.addListener(function (tabId, changeInfo, tab) {
-  dump("onCreated("+tab.sessionId+")\n");
+  dump("onCreated("+tab.sessionId+" - tab.visible:"+tab.visible+")\n");
   let id = tab.sessionId;
   let group = groups[current];
-  if (!group) return;
+  if (!group) {
+    dump("  > no current group\n");
+    // Ensure that tabs from other groups are really hidden
+    if (tab.visible || typeof(tab.visible) == "undefined") {
+      chrome.tabs.update(tabId, { visible: false } );
+    }
+    return;
+  }
   if (group.tabs.includes(id)) {
+    dump("  > tab of this group\n");
     // If the id is already in the group, it means that we are restoring a previous session
     // so, ensure the tab is visible.
     if (!tab.visible) {
@@ -72,17 +82,18 @@ chrome.tabs.onCreated.addListener(function (tabId, changeInfo, tab) {
   // If the id is in another group, it still means we are restoring a previous session
   // but this time we ensure the tab is hidden
   if (ids.includes(id)) {
-    if (tab.visible) {
+    dump("  > tab in ids\n");
+    if (tab.visible || typeof(tab.visible) == "undefined") {
       chrome.tabs.update(tabId, { visible: false } );
     }
     return;
   }
+  dump("  > else, add id in the current group\n");
   // Otherwise, it looks like a fresh new tab, so flag it for the current group
   group.tabs.push(id);
   save();
-
-
 });
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   dump("onUpdated("+tab.sessionId+")\n");
   if (!tab.active) {

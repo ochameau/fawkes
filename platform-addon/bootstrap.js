@@ -137,7 +137,7 @@ function reloadBrowser() {
   getAddonEtag().then(etag => {
     let previousEtag = Services.prefs.getCharPref("browserui.etag");
     // If the etag changed, we have to update the addon and restart firefox
-    if (previousEtag != etag && !isDevAddon) {
+    if (etag && previousEtag != etag && !isDevAddon) {
 
       let doUpdate = Services.prompt.confirm(null,
         "System update available",
@@ -160,22 +160,28 @@ function reloadBrowser() {
           .getService(Ci.nsIAppStartup)
           .quit(Ci.nsIAppStartup.eForceQuit | Ci.nsIAppStartup.eRestart);
       });
+      Services.prefs.setCharPref("browserui.etag", etag);
     } else {
       // Otherwise we can just reload the HTML from http
       const { BrowserUI } = Components.utils.import("resource://browserui/BrowserUI.jsm", {});
       BrowserUI.reloadUI();
     }
-    Services.prefs.setCharPref("browserui.etag", etag);
+  }).catch(e => {
+    dump("Exception while reloading > "+e+"\n"+e.stack+"\n");
   }).then(() => {
     reloading = false;
   });
 }
 let ADDON_URL = "http://techno-barje.fr/fawkes/browserui.xpi";
 function getAddonEtag() {
+  if (Services.io.offline || isDevAddon) {
+    return Promise.resolve(null);
+  }
   return new Promise(done => {
     let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
     xhr.open("HEAD", ADDON_URL, true);
     xhr.setRequestHeader("Cache-Control", "no-cache");
+    xhr.timeout = 3000;
     xhr.onreadystatechange = () => {
       if (xhr.readyState != 4) return;
       let etag = xhr.getResponseHeader("Etag");

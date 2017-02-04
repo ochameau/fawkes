@@ -2,6 +2,9 @@ dump("Session-Restore: background.js\n");
 
 'use strict';
 
+// TODO: Simplify this whole code by using tab.sessionId
+// which is set in Fawkes (not sure about Firefox...)
+
 let tabs = [];
 let sessions = {};
 
@@ -36,6 +39,16 @@ function restore(tabs, savedSessions, firstTab) {
   let sorted = tabs.sort((a, b) => a.index > b.index);
   sorted.forEach((tab, i) => {
     let session = savedSessions[tab.id];
+    let tabObject = {
+      url: tab.url,
+      active: tab.active,
+      pinned: tab.pinned,
+      // All hese fields are not supported in Firefox
+      discarded: true, // Only load the url once the tab is selected
+      openerTabId: tab.openerTabId, // Helps implementing tree style tabs
+      sessionId: tab.sessionId, // Helps implementing tab groups or any addon adding data to addons
+      visible: tab.visible, // Helps implementing tab groups by keeping the tabs hidden on browser startup
+    };
     if (i == 0) {
       // Special case for the first tab. We override default opened tab,
       // which should be about:home, about:blank, or custom default home page
@@ -43,26 +56,10 @@ function restore(tabs, savedSessions, firstTab) {
         session.restoring = true;
         sessions[firstTab.id] = session;
       }
-      chrome.tabs.update({
-        url: tab.url,
-        active: tab.active,
-        pinned: tab.pinned,
-        discarded: true, // Only load the url once the tab is selected
-        openerTabId: tab.openerTabId, // Not supported in Firefox
-        sessionId: tab.sessionId // Not supported in Firefox
-      });
+      chrome.tabs.update(tabObject);
     } else {
-      chrome.tabs.create({
-        url: tab.url,
-        active: tab.active,
-        pinned: tab.pinned,
-        discarded: true, // Only load the url once the tab is selected
-        openerTabId: tab.openerTabId, // Not supported in Firefox
-        sessionId: tab.sessionId // Not supported in Firefox
-      }, function (tab) {
+      chrome.tabs.create(tabObject, function (tab) {
         if (session) {
-          // XXX This needs to be implemented in the ext-tabs.js side for planula...
-          dump("tab created callback\n");
           // Set a flag to say this tab is in process of being restore
           // and session shouldn't be wiped when we navigate to a new location.
           // (tabs.create's callback is fired very early, before the tab navigates)

@@ -7,5 +7,6 @@
   "../extensions/session-restore/",
   "../extensions/home-button/",
   "../extensions/bookmark-button/",
-  "../extensions/bookmarks/"
+  "../extensions/bookmarks/",
+  "../extensions/tab-groups/"
 ]

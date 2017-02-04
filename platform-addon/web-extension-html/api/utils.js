@@ -8,7 +8,7 @@
  * i.e. state object describing all tabs.
  */
 
-let DEBUG = true;
+let DEBUG = false;
 if (!DEBUG) {
   dump = () => {};
 }
@@ -69,6 +69,8 @@ global.TabsState = {
       if (!tab) {
         tab = { id };
         tab.sessionId = data.sessionId || generateUUID().toString();
+        // Automatically set visible to true when undefined, otherwise just ensure it is a boolean
+        tab.visible = typeof(tab.visible) == "undefined" || !!tab.visible;
         this.tabs.set(id, tab);
         event = "create";
         notify = true;

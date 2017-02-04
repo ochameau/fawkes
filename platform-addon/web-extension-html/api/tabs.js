@@ -4,6 +4,9 @@ Cu.import("resource://gre/modules/ExtensionUtils.jsm");
  * Reimplement chrome.tabs to not depend on browser.xul
  *
  * Instead we just store the state and forward events
+ * 
+ * /!\ There is very important piece of code in ./utils.js
+ * which manages the tabs state data (TabsState)
  */
 
 var {
