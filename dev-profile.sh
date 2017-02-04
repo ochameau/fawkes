@@ -8,7 +8,7 @@ fi
 PROFILE=$1
 rm -rf $PROFILE
 mkdir -p $PROFILE/extensions/
-echo "../../platform-addon" > $PROFILE/extensions/browserui@mozilla.org
+echo "$PWD/platform-addon" > $PROFILE/extensions/browserui@mozilla.org
 echo "pref('xpinstall.signatures.required', false);" > $PROFILE/user.js
 echo "pref('extensions.autoDisableScopes', 0);" >> $PROFILE/user.js
 echo "pref('browser.dom.window.dump.enabled', true);" >> $PROFILE/user.js
