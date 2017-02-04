@@ -1,0 +1,22 @@
+{
+  "description": "implements the browser layout",
+  "manifest_version": 2,
+  "name": "layout",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "layout@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "browserui",
+    "browserActionManagement",
+    "popup"
+  ],
+
+  "browser_ui": {
+    "layout": "layout.html"
+  }
+}

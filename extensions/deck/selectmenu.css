@@ -1,0 +1,24 @@
+html {
+  background: white;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  font-size: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid gray;
+  max-height: 298px; /* to sync with deck/script.js's mozbrowserselectmenu listener */
+                     /* -2px for the borders */
+}
+div {
+  line-height: 30px;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+div:hover {
+  background: hsl(210, 80%, 52%);
+  color: white;
+}

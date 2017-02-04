@@ -1,0 +1,221 @@
+body {
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex: 1;
+  height: 100%;
+  width: 100%;
+}
+/* Drag the window */
+html {
+  -moz-window-dragging: drag;
+}
+.scroll, .tab, #new-tab {
+  -moz-window-dragging: no-drag;
+}
+
+#tabs {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+[os="osx"] .tabstrip:first-of-type {
+  padding-top: 9px;
+}
+
+.tab {
+  -moz-user-select: none;
+  cursor: default;
+  color: #eee;
+  border-style: solid;
+  border-width: 0 28px;
+  border-image-slice: 0 28 0 28 fill;
+  border-color: transparent;
+  margin-right: -25px;
+
+  background-clip: border-box;
+
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+
+  max-width: 200px;
+}
+
+[os="windows"] .tab {
+  color: black;
+}
+
+[os="linux"] .dummy-tab-curve {
+  /* These values are used in curvedTabs.js */
+  --curve-border: transparent;
+  --curve-gradient-start: #FBFBFB;
+  --curve-gradient-end: #EDEDED;
+  --curve-hover-border: transparent;
+  --curve-hover-gradient-start: rgba(255,255,255,0.4);
+  --curve-hover-gradient-end: rgba(255,255,255,0.4);
+}
+
+[os="windows"] .dummy-tab-curve {
+  /* These values are used in curvedTabs.js */
+  --curve-border: rgb(148, 166, 183);
+  --curve-gradient-start: rgb(233, 242, 251);
+  --curve-gradient-end: rgb(233, 242, 251);
+  --curve-hover-border: transparent;
+  --curve-hover-gradient-start: rgba(255, 255, 255, 0.4);
+  --curve-hover-gradient-end: rgba(255, 255, 255, 0.4);
+}
+
+[os="osx"] .dummy-tab-curve {
+  /* These values are used in curvedTabs.js */
+  --curve-border: #AAA;
+  --curve-gradient-start: #FBFBFB;
+  --curve-gradient-end: #F1F1F1;
+  --curve-hover-border: #AAA;
+  --curve-hover-gradient-start: transparent;
+  --curve-hover-gradient-end: transparent;
+}
+
+@media (min-resolution: 2dppx) {
+  .tab {
+    border-image-slice: 0 56 0 56 fill;
+  }
+}
+
+.tab.selected {
+  border-image-source: -moz-element(#canvas-tab-selected);
+  color: black;
+}
+
+.tab:not(.selected):not(:hover) + .tab:not(.selected):not(:hover):not(:first-of-type) {
+  background-image:  linear-gradient(transparent 6px, rgba(0,0,0,0.2) 6px, rgba(0,0,0,0.2) calc(100% - 5px), transparent calc(100% - 5px));
+  background-size: 1px 100%;
+  background-repeat: no-repeat;
+  background-position: -14px 0;
+}
+
+.tab:not(.selected):hover {
+  border-image-source: -moz-element(#canvas-tab-hover);
+}
+
+.tab > .favicon, .tab > .throbber {
+  width: 16px;
+  height: 16px;
+  margin: 0 3px 0 -6px;
+  image-rendering: optimizequality;
+}
+
+.tab > .favicon:not([src]) {
+  display: none;
+}
+
+.tab > .throbber {
+  background-image: url(images/loading.png);
+  background-size: 16px 16px;
+}
+
+@media (min-resolution: 2dppx) {
+  .tab > .throbber {
+    background-image: url(images/loading@2x.png);
+  }
+}
+
+.tab.loading > .favicon,
+.tab:not(.loading) > .throbber {
+  display: none;
+}
+
+.tab > .title {
+  flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0.7;
+  font: message-box;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tab.selected > .title {
+  opacity: 1;
+}
+
+.tab > .close-button {
+  -moz-appearance: none;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+
+  width: 16px;
+  height: 16px;
+  background-color: transparent;
+  background-image: url(images/close.png);
+  background-size: 64px 16px;;
+  margin: 0 -6px 0 3px;
+}
+/* Hide gray border on click, which focuses the button */
+.close-button::-moz-focus-inner {
+  border: 0;
+}
+
+[os="osx"] .tab > .close-button {
+  background-position: 0 0;
+}
+
+[os="linux"] .tab > .close-button {
+  background-position: -48px 0;
+}
+
+.tab.selected > .close-button {
+  background-position: 0 0;
+}
+
+
+@media (min-resolution: 2dppx) {
+  .tab > .close-button {
+    background-image: url(images/close@2x.png);
+  }
+}
+
+.tab > .close-button:hover {
+  background-position: -16px 0;
+}
+
+.tab > .close-button:hover:active {
+  background-position: -32px 0;
+}
+
+#new-tab {
+  -moz-appearance: none;
+  border: none;
+  background: none;
+  background-image: url(images/newtab-inverted.svg);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+/* Removes unexpected outline on windows due to <button> usage */
+#new-tab::-moz-focus-inner {
+  border: 0;
+}
+
+#tree {
+  display: none;
+}
+
+.scroll {
+  width: 20px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-image: url(images/tab-arrow-left-inverted.png);
+}
+.scroll.disabled {
+  background-image: url(images/tab-arrow-left.png);
+}
+.scroll.right {
+  transform: rotate(180deg);
+}

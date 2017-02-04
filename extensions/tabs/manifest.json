@@ -1,0 +1,83 @@
+{
+  "description": "implements the horizontal tabs",
+  "manifest_version": 2,
+  "name": "horizontal-tabs",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "horizontal-tabs@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "commands": {
+    "create-new-tab": {
+      "suggested_key": {
+        "default": "Ctrl+T"
+      },
+      "description": "Open a new tab"
+    },
+    "next-tab": {
+      "suggested_key": {
+        "default": "Ctrl+Tab"
+      },
+      "description": "Switch to the next tab"
+    },
+    "previous-tab-2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Tab"
+      },
+      "description": "Switch to the previous tab"
+    },
+    "previous-tab": {
+      "suggested_key": {
+        "default": "Ctrl+PageUp"
+      },
+      "description": "Switch to the previous tab"
+    },
+    "next-tab-2": {
+      "suggested_key": {
+        "default": "Ctrl+PageDown"
+      },
+      "description": "Switch to the next tab"
+    },
+    "restore-tab": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T"
+      },
+      "description": "Restore a previously closed tab"
+    },
+    "close-tab": {
+      "suggested_key": {
+        "default": "Ctrl+W"
+      },
+      "description": "Close the current tab"
+    },
+    "select-tab-1": {
+      "suggested_key": {
+        "default": "Ctrl+1"
+      },
+      "description": "Switch to the 1st tab"
+    },
+    "select-tab-2": {
+      "suggested_key": {
+        "default": "Ctrl+2"
+      },
+      "description": "Switch to the 2nd tab"
+    },
+    "select-tab-3": {
+      "suggested_key": {
+        "default": "Ctrl+3"
+      },
+      "description": "Switch to the 3rd tab"
+    }
+  },
+
+  "browser_ui": {
+    "tabs": "tabs.html"
+  }
+}

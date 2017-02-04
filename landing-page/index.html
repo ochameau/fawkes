@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/addons.js" defer></script>
+    <script src="js/themes.js" defer></script>
+  <head>
+
+  <body>
+    <div id="header">
+      <a class="mozilla" href="http://mozilla.org"></a>
+      <a class="firefox" href="http://mozilla.org"></a>
+    </div>
+    <div id="content">
+      <div id="groups">
+        <div class="group browsers">
+          <h3>Browsers</h3>
+          <ul>
+            <li><a class="browser-ui" href="../browsers/web-extension.json">Web extension</a></li>
+            <li><a class="browser-ui" href="../browsers/web-extension-vertical-tabs.json">Web extension with vertical tabs</a></li>
+            <li><a class="browser-ui" href="../browsers/simple/">Simple</a></li>
+            <li><a class="browser-ui" href="../browsers/browseractions/">Browser actions</a></li>
+            <li><a class="browser-ui" href="../browsers/advanced/">Advanced</a></li>
+            <li><a class="browser-ui" href="../browsers/advanced/index.html?tabsui=sidetabs">Advanced with tabs on side</a></li>
+            <li><a class="browser-ui" href="../browsers/advanced/index.html?tabsui=tofino">Tofino theme</a></li>
+            <li><a class="browser-ui" href="../browsers/browserhtml-old/">Browser html old</a></li>
+            <li><a class="browser-ui" href="../browsers/browserhtml/dist/">Browser html master</a></li>
+            <li><a class="browser-ui" href="../browsers/coloured/dist/">Coloured</a></li>
+            <li><a class="browser-ui">Back to default Firefox</a></li>
+          </ul>
+        </div>
+        <div class="group themes">
+          <h3>Themes</h3>
+          <ul>
+            <li data-path="./themes/eco/" data-header="header.jpg" data-footer="footer.jpg">Eco</li>
+            <li data-path="./themes/eco/" data-header="header.jpg" data-footer="footer.jpg"
+                data-vars="{&quot;tab-selected-color&quot;: &quot;red&quot;, &quot;tab-color&quot;: &quot;blue&quot;,
+                            &quot;urlbar-background-color&quot;: &quot;#f0f0f0&quot;, &quot;urlbar-color&quot;: &quot;green&quot;}">Eco + vars</li>
+            <li data-path="./themes/fox/" data-header="header.jpg" data-footer="footer.jpg">Fox</li>
+            <li data-path="./themes/brushed/" data-header="header.png" data-footer="footer.png">Brushed</li>
+          </ul>
+        </div>
+        <div class="group addons">
+          <h3>Addons</h3>
+          <ul>
+            <li data-id="layout@mozilla.org" data-path="../extensions/layout/">layout</li>
+            <li data-id="tabs-on-top@mozilla.org" data-path="../extensions/tabs/">tabs</li>
+            <li data-id="deck@mozilla.org" data-path="../extensions/deck/">deck</li>
+            <li data-id="urlbar@mozilla.org" data-path="../extensions/urlbar/">urlbar</li>
+            <li data-id="awesomebar@mozilla.org" data-path="../extensions/awesomebar/">awesomebar</li>
+            <li data-id="home-button@mozilla.org" data-path="../extensions/home-button/">home</li>
+            <li data-id="viewsource-button@mozilla.org" data-path="../extensions/view-source/">View Source</li>
+            <li data-id="bookmark-button@mozilla.org" data-path="../extensions/bookmark-button/">Bookmark</li>
+            <li data-id="bookmarks@mozilla.org" data-path="../extensions/bookmarks/">List bookmarks</li>
+            <li data-id="devtools-panel@mozilla.org" data-path="../extensions/devtools-panel/">Devtools</li>
+            <li data-id="session-restore@mozilla.org" data-path="../extensions/session-restore/">Session Restore</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      for (let link of document.querySelectorAll(".browser-ui")) {
+        let path = link.getAttribute("href");
+        if (path) {
+          let url = new URL(path, location);
+          url.protocol = "browserui";
+          link.href = url.href;
+        } else {
+          link.href = "browserui://";
+        }
+      }
+    </script>
+  </body>
+</html>

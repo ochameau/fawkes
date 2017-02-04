@@ -1,0 +1,112 @@
+body {
+  background: #000 url(img/nightly-bg.png) 50% 0 repeat-x;
+  border-top: 2px solid #686868;
+  text-align: center;
+  font-family: Georgia, serif;
+  margin: 0;
+  padding: 0;
+  min-width: 990px;
+}
+#header {
+  height: 57px;
+  margin: 0 auto;
+  width: 970px;
+}
+#header > a {
+  display: block;
+}
+#header > a.firefox {
+  background: url(img/nightly-title.png) 0 0 no-repeat;
+  height: 70px;
+  width: 183px;
+  position: relative;
+  top: 5px;
+}
+#header > a.mozilla {
+  background: url(img/nightly-title.png) 100% 0 no-repeat;
+  text-indent: -9999px;
+  position: relative;
+  float: right;
+  height: 49px;
+  width: 118px;
+}
+#content {
+  background: url(img/nightly-content-bg.png) 50% -40px no-repeat;
+  color: #fff;
+  min-height: 500px;
+  text-shadow: #000 1px 1px 1px;
+  text-align: left;
+}
+
+#groups {
+  width: 920px; 
+  margin: auto;
+}
+
+.group h3 {
+  margin-right: 2px;
+  width: 140px;
+  background: rgba(133, 156, 228, .1);
+  border: 1px solid #1b335b;
+  box-shadow: inset 1px 1px 8px 1px #1b335b;
+  float: left;
+  font: normal 20px 'MuseoSans500', sans-serif;
+  padding: 20px 30px;
+}
+.group ul {
+  width: 625px;
+  background: rgba(133, 156, 228, .1);
+  border: 1px solid #1b335b;
+  box-shadow: inset 1px 1px 8px 1px #1b335b;
+  float: left;
+  font: normal 20px 'MuseoSans500', sans-serif;
+  padding: 10px 0;
+  margin: 0;
+  margin-top: 20px;
+}
+.group li {
+  border-bottom: 1px dotted #24375b;
+  min-height: 40px;
+  list-style: none;
+  padding-left: 30px;
+  padding-top: 10px;
+}
+.group li a {
+  color: white;
+}
+
+.group.themes li {
+  border: 1px solid gray;
+  box-shadow: inset 1px 1px 8px 1px #1b335b;
+  margin: 10px;
+}
+
+.group.themes li.enabled {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.group.themes li.enabled.keep-installed {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.group.addons li {
+  visibility: hidden;
+  border: 1px solid gray;
+  box-shadow: inset 1px 1px 8px 1px #1b335b;
+  margin: 10px;
+}
+
+.group.addons li.loaded {
+  visibility: visible;
+}
+
+.group.addons li.enabled {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.group.addons li.enabled.keep-installed {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+p {
+  clear: both;
+  text-align: center;
+}

@@ -1,0 +1,164 @@
+html {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-grow: 1;
+  align-items: stretch;
+
+  /* Useful for lightweight theme background image */
+  background-repeat: no-repeat;
+  background-position: top right;
+}
+
+/* For some reason, when maximized with aero glass on windows, the document is displayed offscreen by 8px on the top */
+html[os="windows"][sizemode="maximized"] {
+  margin-top: 8px;
+  height: calc(100% - 8px);
+}
+
+body {
+  margin: 0;
+
+  display: flex;
+  flex-grow: 1;
+  flex-flow: row;
+  align-items: stretch;
+
+  /* Allows this document to have a transparent background */
+  background-color: transparent;
+}
+
+/* Allows to drag the window on the top margin as well as on the right of the tabs iframe */
+html, #tabs {
+  -moz-window-dragging: drag;
+}
+#chromebar, iframe {
+  -moz-window-dragging: no-drag;
+}
+
+iframe {
+  border: 0;
+}
+
+#chrome-and-content {
+  z-index: 5;
+  display: flex;
+  flex-grow: 1;
+  flex-flow: column;
+}
+
+#vertical-tabs {
+  z-index: 1;
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 40px;
+  height: 100%;
+  margin: 0; padding: 0;
+
+  transition-property: width, box-shadow;
+  transition-duration: 150ms;
+
+  background-image: linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15));
+  background-color: -moz-Dialog;
+  border-right: 1px solid rgba(0,0,0,0.2);
+  box-shadow: inset -4px 0px 4px 0px rgba(0,0,0,0.2);
+}
+
+#vertical-tabs + #chrome-and-content {
+  margin-left: 40px;
+}
+#vertical-tabs:hover {
+  z-index: 10;
+  width: 200px;
+  box-shadow: none;
+}
+
+#tabs {
+  width: 100%;
+  height: 31px;
+}
+
+:root[os="windows"] #tabs {
+  /* make tabs smaller on windows to avoid overlapping window control buttons */
+  width: calc(100% - 120px);
+  margin-top: 15px;
+}
+
+:root[os="windows"][sizemode="maximized"] #tabs {
+  margin-top: 0;
+}
+
+:root[os="linux"] #tabs {
+  /* For a dark background */
+  -moz-appearance: menubar;
+}
+
+/* Try to align it with #tabs, but relative/absolute only work with flex containers */
+/* Also stop tabs iframe and this shadow before the window controls as it overlaps them... */
+/* Don't know why XUL doesn't overlap them */
+:root[os="windows"] body::after {
+  box-shadow: 0 0 30px 30px rgba(174,189,204,0.85);
+  content: "";
+  height: 0;
+  margin: 0 60px; 
+  pointer-events: none;
+  position: absolute;
+  top: 27px; 
+  width: calc(100% - 200px);
+  z-index: -1;
+}
+
+#chromebar {
+  display: flex;
+  flex-flow: row;
+
+  height: 41px;
+  border-bottom: 1px solid ThreeDShadow;
+}
+
+:root[os="windows"] #chromebar {
+  background-color: rgb(219, 234, 249);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.4), transparent);
+}
+:root[os="linux"] #chromebar {
+  background-image: linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15));
+  background-color: -moz-Dialog;
+}
+
+#urlbar {
+  flex-grow: 1;
+}
+
+#navbar-extensions {
+  display: flex;
+  flew-flow: row;
+  align-items: center;
+}
+button.extension-button {
+  height: 26px;
+  -moz-appearance: none;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  background: none;
+  margin-left: 3px;
+}
+button.extension-button:hover {
+  border-bottom-color: 1px solid rgba(23, 51, 78, 0.25);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1));
+  box-shadow: rgba(255, 255, 255, 0.3) 0px 1px 0px 0px inset, rgba(23, 51, 78, 0.03) 0px 1px 0px 0px, rgba(23, 51, 78, 0.1) 0px 0px 2px 0px;
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: 150ms;
+}
+/* Hide border when clicking on buttons which focuses them */
+button.extension-button::-moz-focus-inner {
+  border: 0;
+}
+button.extension-button img {
+  max-width: 18px;
+  max-height: 18px;
+}
+
+#deck {
+  flex-grow: 1;
+  background-color: -moz-Dialog;
+}

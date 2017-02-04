@@ -1,0 +1,56 @@
+[
+  {
+    "namespace": "browserActionManagement",
+    "description": "browser action management",
+    "permissions": ["browserActionManagement"],
+    "functions": [
+      {
+        "name": "getAll",
+        "type": "function",
+        "async": "callback",
+        "description": "Returns all the registered browser ui actions.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "actions",
+                "type": "array",
+                "items": {
+                  "$ref": "any"
+                }
+              }
+            ],
+            "description": "Called to return the registered browser ui actions."
+          }
+        ]
+      },
+      {
+        "name": "click",
+        "type": "function",
+        "description": "Indicate that a browser action has been clicked",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "integer"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onUpdate",
+        "type": "function",
+        "description": "Fired when any browser action state changes",
+        "parameters": [
+          {
+            "type": "any",
+            "name": "data"
+          }
+        ]
+      }
+    ]
+  }
+]

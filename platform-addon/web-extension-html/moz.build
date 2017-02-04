@@ -1,0 +1,27 @@
+FINAL_TARGET = 'dist/bin/browser/extensions/web-extension-html@mozilla.org'
+
+FINAL_TARGET_FILES += [
+  'bootstrap.js',
+  'chrome.manifest',
+  'FixAboutHome.jsm',
+  'install.rdf',
+  'MakeFirefoxLight.jsm',
+  'WebExtensionProtocolHandler.jsm',
+]
+
+FINAL_TARGET_FILES.frame-scripts += [
+  ''
+]
+
+FINAL_TARGET_FILES.api += [
+  'api/browser-action.js',
+  'api/browser-ui.js',
+  'api/commands.json',
+  'api/commands.js',
+  'api/tabs.js',
+  'api/tweakMozbrowserIframes.js',
+  'api/utils.js',
+  'schemas/browser-ui.json',
+  'schemas/commands.json',
+  'schemas/manifest-tweaks.json',
+]

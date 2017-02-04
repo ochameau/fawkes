@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        width: 200px; height: 200px;
+        margin: 0; padding: 0;
+        font-size: 12px;
+        font-family: sans-serif;
+      }
+      ul {
+        margin: 0;
+        padding: 5px;
+      }
+      li {
+        margin: 0; padding: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
+      .current {
+        font-weight: bold;
+        background: silver;
+      }
+      input {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <script src="script.js" defer></script>
+  <body>
+    <ul id="groups"></ul>
+    New group:<br/>
+    <input type="text" id="new" />
+  </body>
+</html>

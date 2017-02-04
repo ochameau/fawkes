@@ -1,0 +1,63 @@
+body, #tabs {
+  flex-flow: column;
+}
+.tab {
+  color: black;
+  min-height: 30px;
+  /* reset border hacks used for curved tabs */
+  border: none; 
+
+  border-bottom: 1px solid rgba(0,0,0,0.2);
+  margin-right: 0;
+}
+/* branch means it isn't root and there is some margin on the left */
+.tab.branch {
+  border-left: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Prevent resetting border-bottomn on .tab */
+.tab.selected, .tab:not(.selected):hover {
+  border-image-source: none;
+}
+/* disable the `|`, little vertical gray bar that are between horizontal tabs */
+.tab:not(.selected):not(:hover) + .tab:not(.selected):not(:hover):not(:first-of-type) {
+  background: none;
+}
+/* Make the close button always dark */
+[os="linux"] .tab > .close-button {
+  background-position: 0 0;
+}
+
+[os="linux"] .tab.selected {
+  background-color: rgba(255,255,255,0.4);
+}
+[os="windows"] .tab.selected {
+  background-color: rgb(233, 242, 251);
+}
+[os="osx"] .tab.selected {
+  background-color: #FBFBFB;
+}
+.tab > .favicon, .tab > .throbber {
+  margin: 0;
+}
+.tab > .close-button {
+  margin: 0;
+}
+
+.scroll {
+  height: 30px;
+  padding: 0;
+  margin: auto;
+}
+.scroll.left {
+  transform: rotate(90deg);
+}
+.scroll.right {
+  transform: rotate(-90deg);
+}
+#new-tab {
+  height: 30px;
+}
+#tree {
+  display: block;
+}

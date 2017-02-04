@@ -1,0 +1,73 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "WebExtensionManifest",
+        "properties": {
+          "browser_ui": {
+            "type": "object",
+
+            "optional": true,
+
+            "properties": {
+              "layout": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              },
+              "tabs": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              },
+              "vertical-tabs": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              },
+              "deck": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              },
+              "urlbar": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              },
+              "awesomebar": {
+                "$ref": "ExtensionURL",
+                "optional": true
+              }
+            },
+
+            "additionalProperties": {
+              "type": "any",
+              "deprecated": "An unexpected property was found in the WebExtension manifest"
+            }
+          }
+        }
+      },
+			{
+        "$extend": "Permission",
+        "choices": [{
+          "type": "string",
+          "enum": [
+            "browser"
+          ]
+        }, {
+          "type": "string",
+          "enum": [
+            "browserui"
+          ]
+        }, {
+          "type": "string",
+          "enum": [
+            "popup"
+          ]
+        }, {
+          "type": "string",
+          "enum": [
+            "browserActionManagement"
+          ]
+        }]
+      }
+    ]
+  }
+]

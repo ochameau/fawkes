@@ -1,0 +1,11 @@
+[
+  "../extensions/vertical-tabs/",
+  "../extensions/layout/",
+  "../extensions/urlbar/",
+  "../extensions/deck/",
+  "../extensions/awesomebar/",
+  "../extensions/session-restore/",
+  "../extensions/home-button/",
+  "../extensions/bookmark-button/",
+  "../extensions/bookmarks/"
+]

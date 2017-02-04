@@ -1,0 +1,21 @@
+{
+  "description": "implements the awesomebar",
+  "manifest_version": 2,
+  "name": "awesomebar",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "awesomebar@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs",
+    "history"
+  ],
+
+  "browser_ui": {
+    "awesomebar": "awesomebar.html"
+  }
+}

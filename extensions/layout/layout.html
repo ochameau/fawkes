@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="script.js"></script>
+    <script src="browser-ui.js" defer></script>
+    <script src="browser-actions.js" defer></script>
+    <!--
+    <script src="panels.js" defer></script>
+    -->
+  </head>
+
+  <body>
+    <!-- vertical-tabs is inserted here -->
+
+    <!-- #chrome-and-content includes the web pages and the toolbars
+        (urlbar, tabs-on-top) on top of it. And is always in column flow -->
+    <div id="chrome-and-content">
+      <div id="chromebar">
+        <!-- tabs-on-top is inserted here -->
+        <div id="urlbar"></div>
+        <div id="navbar-extensions"></div>
+      </div>
+      <!-- deck addon with web pages is inserted here -->
+    </div>
+  </body>
+</html>

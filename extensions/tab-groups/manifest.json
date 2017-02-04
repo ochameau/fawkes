@@ -1,0 +1,26 @@
+{
+  "description": "implements tab groups",
+  "manifest_version": 2,
+  "name": "tab-groups",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "tab-groups@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "browser_action": {
+    "default_icon": "groups.png",
+    "default_title": "Manage tab groups",
+    "default_popup": "tab-groups.html"
+  }
+}

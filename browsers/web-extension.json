@@ -1,0 +1,12 @@
+[
+  "../extensions/layout/",
+  "../extensions/urlbar/",
+  "../extensions/tabs/",
+  "../extensions/deck/",
+  "../extensions/awesomebar/",
+  "../extensions/session-restore/",
+  "../extensions/home-button/",
+  "../extensions/bookmark-button/",
+  "../extensions/bookmarks/",
+  "../extensions/tab-groups/"
+]

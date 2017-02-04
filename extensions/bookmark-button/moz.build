@@ -1,0 +1,9 @@
+FINAL_TARGET = 'dist/bin/browser/extensions/bookmark-button@mozilla.org'
+
+FINAL_TARGET_FILES += [
+  'background.js',
+  'bookmark.html',
+  'manifest.json',
+  'starred.png',
+  'unstarred.png',
+]

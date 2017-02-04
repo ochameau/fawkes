@@ -1,0 +1,7 @@
+*.swp
+*.swo
+*.rej
+*.orig
+profile/
+platform-addon/jwt.sh
+platform-addon/release.sh

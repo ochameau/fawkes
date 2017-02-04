@@ -1,0 +1,22 @@
+{
+  "description": "implements the home button",
+  "manifest_version": 2,
+  "name": "devtools-panel",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "devtools-panel@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "browser_action": {
+    "default_icon": "devtools.png",
+    "default_panel": "about:devtools-toolbox?target",
+    "default_orientation": "bottom"
+  }
+}

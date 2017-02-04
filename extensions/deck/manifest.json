@@ -1,0 +1,31 @@
+{
+  "description": "implements the web views deck",
+  "manifest_version": 2,
+  "name": "deck",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "deck@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs",
+    "browser",
+    "popup"
+  ],
+
+  "browser_ui": {
+    "deck": "deck.html"
+  },
+
+  "commands": {
+    "search": {
+      "suggested_key": {
+        "default": "Ctrl+F"
+      },
+      "description": "Focus search input or search next occurence"
+    }
+  }
+}

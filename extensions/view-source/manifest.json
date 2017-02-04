@@ -1,0 +1,25 @@
+{
+  "description": "implements the view-source button",
+  "manifest_version": 2,
+  "name": "viewsource-button",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "viewsource-button@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+  
+  "browser_action": {
+    "default_icon": "viewsource.png",
+    "default_title": "View source"
+  }
+}

@@ -1,0 +1,113 @@
+[
+  {
+    "namespace": "popup",
+    "description": "open popups",
+    "permissions": ["popup"],
+    "functions": [
+      {
+        "name": "open",
+        "type": "function",
+        "async": "callback",
+        "description": "Open a new popup.",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "width",
+            "type": "integer"
+          },
+          {
+            "name": "height",
+            "type": "integer"
+          },
+          {
+            "name": "left",
+            "type": "integer"
+          },
+          {
+            "name": "top",
+            "type": "integer"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+                {
+                  "name": "id",
+                  "type": "integer"
+                }
+            ],
+            "description": "Called to return the Popup identifier"
+          }
+        ]
+      },
+      {
+        "name": "close",
+        "type": "function",
+        "async": "callback",
+        "description": "Close a popup.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "integer"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+            ],
+            "description": "Called when closed"
+          }
+        ]
+      },
+      {
+        "name": "postMessage",
+        "type": "function",
+        "async": "callback",
+        "description": "Send data to a popup",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "integer"
+          },
+          {
+            "name": "data",
+            "type": "any"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+            ],
+            "description": "Called when sent"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onMessage",
+        "type": "function",
+        "description": "Fired when a message is sent by a popup.",
+        "parameters": [
+          {
+            "type": "any",
+            "name": "data"
+          }
+        ],
+        "extraParameters": [
+          {
+            "name": "id",
+            "type": "integer",
+            "description": "Popup id to listen message from"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "namespace": "browserui",
+    "description": "list all available browser ui components.",
+    "permissions": ["browserui"],
+    "functions": [
+      {
+        "name": "getAll",
+        "type": "function",
+        "async": "callback",
+        "description": "Returns all the registered browser ui components.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "commands",
+                "type": "array",
+                "items": {
+                  "$ref": "string"
+                }
+              }
+            ],
+            "description": "Called to return the registered browser ui components."
+          }
+        ]
+      }
+    ]
+  }
+]

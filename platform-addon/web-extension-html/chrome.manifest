@@ -1,0 +1,10 @@
+resource webextensions .
+
+# overload some API implementations
+override chrome://browser/content/ext-browserAction.js resource://webextensions/api/browser-action.js
+override chrome://browser/content/ext-commands.js resource://webextensions/api/commands.js
+override chrome://browser/content/ext-tabs.js resource://webextensions/api/tabs.js
+
+# and some schemas
+# Overload commands schema to accept: Tab and F1-F12 keys and also allow shortcuts without modifier (without Command or Control)
+override chrome://browser/content/schemas/commands.json resource://webextensions/schemas/commands.json
