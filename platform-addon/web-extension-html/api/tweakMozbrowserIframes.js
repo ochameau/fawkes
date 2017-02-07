@@ -27,7 +27,7 @@ function onNewIframe(subject, topic, data) {
   frameLoader.QueryInterface(Ci.nsIFrameLoader);
   let frame = frameLoader.ownerElement;
   // Only take care of HTML iframes
-  if (frame.tagName != "IFRAME" || !frame.mozbrowser) {
+  if (frame.tagName.toUpperCase() != "IFRAME" || !frame.mozbrowser) {
     return;
   }
   let { messageManager } = frame.QueryInterface(Ci.nsIFrameLoaderOwner).frameLoader;

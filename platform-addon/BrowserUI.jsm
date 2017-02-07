@@ -412,18 +412,23 @@ function registerBrowserUI(type, url) {
     // In order for chrome.* to work, we have to load the document into an iframe
     // (all webextension codebase is based on messagemanager...)
 
-    // Also handle aeroglass effect on Windows that needs some specifics CSS to be set.
-    let glass = Services.appinfo.OS == "WINNT" && !uis["vertical-tabs"];
+    // Also handle transparent windows without native titlebar that needs some specifics CSS to be set.
+    // (Most important is background-color: transparent on <html>/documentElement which
+    //  is read by platform code to toggle this special window mode)
+    let transparent = (Services.appinfo.OS == "WINNT" || Services.appinfo.OS == "Darwin")
+      && !uis["vertical-tabs"];
     let newurl = "data:text/html;charset=utf-8," + 
                  "<html windowtype=\"navigator:browser\"";
-    if (glass) {
+    if (transparent) {
       newurl += " tabsintitlebar=\"true\" chromemargin=\"0,2,2,2\"";
     }
     newurl += "><style>";
-    if (glass) {
+    if (transparent) {
       newurl += "html {";
       newurl += " background-color: transparent;";
-      newurl += " -moz-appearance: -moz-win-borderless-glass;";
+      if (Services.appinfo.OS == "WINNT") {
+        newurl += " -moz-appearance: -moz-win-borderless-glass;";
+      }
       newurl += "}";
     } else {
       newurl += "html {";
@@ -431,7 +436,7 @@ function registerBrowserUI(type, url) {
       newurl += "}";
     }
     newurl += "body {margin: 0} iframe {border: none; width: 100%; height: 100%; ";
-    if (glass) {
+    if (transparent) {
       newurl += " background-color: transparent;";
     }
     newurl += "}</style>" +
@@ -457,5 +462,5 @@ var BrowserUI = {
   getAllUIs,
   setURIAsDefaultUI,
   resetUI,
-  reloadUI
+  reloadUI,
 };

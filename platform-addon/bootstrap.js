@@ -68,6 +68,12 @@ function startup(data) {
   });
   listenerReset.start();
 
+  listenerDebug = new MultiWindowKeyListener({
+    keyCode: Ci.nsIDOMKeyEvent.DOM_VK_I, ctrlKey: true, altKey: true, shiftKey: true,
+    callback: debug
+  });
+  listenerDebug.start();
+
   const ServiceWorkers = Components.utils.import("resource://browserui/HttpServiceWorkers.jsm", {});
   ServiceWorkers.startup();
 
@@ -110,6 +116,7 @@ function shutdown(data, reason) {
   // Unregister the key shortcuts
   listenerReload.stop();
   listenerReset.stop();
+  listenerDebug.stop();
 
   const ServiceWorkers = Components.utils.import("resource://browserui/HttpServiceWorkers.jsm", {});
   ServiceWorkers.shutdown();
@@ -125,6 +132,11 @@ function shutdown(data, reason) {
 }
 
 function uninstall() {
+}
+
+function debug() {
+  let {BrowserToolboxProcess} = Cu.import("resource://devtools/client/framework/ToolboxProcess.jsm", {});
+  BrowserToolboxProcess.init();
 }
 
 let reloading = false;

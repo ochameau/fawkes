@@ -24,7 +24,7 @@ function onNewIframe(subject, topic, data) {
   frameLoader.QueryInterface(Ci.nsIFrameLoader);
   let frame = frameLoader.ownerElement;
   // Only take care of HTML iframes
-  if (frame.tagName != "IFRAME" || !frame.getAttribute("mozbrowser")) {
+  if (frame.tagName.toUpperCase() != "IFRAME" || !frame.getAttribute("mozbrowser")) {
     return;
   }
   // Adds the browser API permission to web extension documents in order to allow usign <iframe mozbrowser>
@@ -79,46 +79,30 @@ function onDocumentReady(document) {
   // sendFocusEvent = nsContentUtils::CanCallerAccess(domNode);
   let oldFocus = window.focus;
   window.focus = function () {
-    /*
-    dump("\n ## Chrome hooked focus: "+window.location+"!\n");
-    dump("top:"+Services.wm.getMostRecentWindow(null).location+"\n");
-    dump("focused window: "+Services.focus.focusedWindow.location+"\n");
-    let elt = Services.focus.focusedElement;
-    if (elt) {
-      elt.blur();
-    dump("focused elt: "+elt.tagName+"#"+elt.id+"."+elt.className+"\n");
-    }
-    */
-    //Services.focus.clearFocus(Services.focus.focusedWindow);
-    //Services.focus.clearFocus(this);
-    //Services.focus.clearFocus(t);
-    //Services.focus.clearFocus(window.top);
     Services.focus.clearFocus(Services.wm.getMostRecentWindow(null));
-    /*
-    Services.wm.getMostRecentWindow(null).focus();
-    */
     oldFocus.call(this);
-    /*
-    let utils = xpc.QueryInterface(Ci.nsIInterfaceRequestor).
-                    getInterface(Ci.nsIDOMWindowUtils);
-    //utils.focus(window.document.body);
-    window = Services.wm.getMostRecentWindow(null);
-    try {
-    Services.focus.setFocus(window, Services.focus.FLAG_NOSCROLL);
-    }catch(e) {}
-    try {
-    Services.focus.setFocus(window.document.body, Services.focus.FLAG_NOSCROLL);
-    }catch(e) {}
-    try {
-      Services.focus.focusedWindow = window;
-    }catch(e) {}
-    try {
-      Services.focus.focusedElement = window.document.body;
-    }catch(e) {}
-    */
   };
-  //window.addEventListener("focus", (evt) => dump(" > chrome focus: "+(evt.target.location || evt.target.src)+"\n"), true);
-  //window.addEventListener("blur", (evt) => dump(" < chrome blur: "+(evt.target.location || evt.target.src)+"\n"), true);
+
+  // Do not allow popup opened via chrome.popup API to control toplevel window
+  // which happen to be the top level html document...
+  // Instead forward some JS APIs to the panel API
+  let frameElement = document.defaultView.QueryInterface(Ci.nsIInterfaceRequestor)
+    .getInterface(Ci.nsIDOMWindowUtils)
+    .containerElement;
+  if (frameElement.parentNode.tagName.toLowerCase() == "panel") {
+    let panel = frameElement.parentNode;
+    window.close = function () {
+      // Let a chance to all postMessage to work if called before window.close()
+      // by cleaning up the panel only on the next event loop
+      document.defaultView.setTimeout(function () {
+        panel.hidePopup();
+      });
+    }
+    window.resizeTo = function (w, h) {
+      panel.sizeTo(w, h);
+    }
+    return;
+  }
 
   // Allows web extensions document to call window.close()
   let webNav = document.defaultView.QueryInterface(Ci.nsIInterfaceRequestor)

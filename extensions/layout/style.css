@@ -124,6 +124,10 @@ iframe {
   background-image: linear-gradient(hsla(0,0%,100%,.15), hsla(0,0%,100%,.15));
   background-color: -moz-Dialog;
 }
+:root[os="osx"] #chromebar {
+  background-color: rgb(219, 234, 249);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.4), transparent);
+}
 
 #urlbar {
   flex-grow: 1;

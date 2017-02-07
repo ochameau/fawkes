@@ -24,6 +24,8 @@ $ ./dev-profile.sh profile
 
 # Run firefox
 $ firefox -profile profile/ http://localhost/
+(You can also pass --jsdebugger to open devtools against the whole browser,
+ don't miss the frame switching button on the left of the settings button)
 
 # Select one of the web extension browser
 # Click "Install" to install it
@@ -32,6 +34,8 @@ $ firefox -profile profile/ http://localhost/
 
 # Then you can refresh the web extensions via Alt + R key shortcut,
 # Or revert back to original Firefox via Ctrl + Alt + R.
+
+# You can open the debugger at any time by pressing Ctrl + Alt + Shift + I
 ```
 
 ## Repo content

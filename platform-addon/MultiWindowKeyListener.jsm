@@ -16,11 +16,21 @@ const {Services} = Cu.import("resource://gre/modules/Services.jsm", {});
 var EXPORTED_SYMBOLS = ["MultiWindowKeyListener"];
 
 // Helper to listen to a key on all windows
-function MultiWindowKeyListener({ keyCode, ctrlKey, altKey, callback }) {
+function MultiWindowKeyListener({ keyCode, ctrlKey, altKey, shiftKey, callback }) {
+  let called = false;
   let keyListener = function (event) {
     if (event.keyCode === keyCode &&
         event.ctrlKey == !!ctrlKey &&
+        event.shiftKey == !!shiftKey &&
         event.altKey == !!altKey) {
+      // Prevent calling 'callback' multiple times
+      // We have to listen for keydown as keypress doesn't work due to iframes
+      if (called) return;
+      called = true;
+      event.target.ownerDocument.defaultView.setTimeout(function () {
+        called = false;
+      });
+
       callback(event);
 
       // Call preventDefault to avoid duplicated events when
@@ -30,7 +40,7 @@ function MultiWindowKeyListener({ keyCode, ctrlKey, altKey, callback }) {
   };
 
   let observer = function (window, topic, data) {
-    window.addEventListener("keydown", keyListener);
+    window.addEventListener("keydown", keyListener, true);
   };
 
   return {
@@ -49,7 +59,7 @@ function MultiWindowKeyListener({ keyCode, ctrlKey, altKey, callback }) {
       let e = Services.wm.getEnumerator(null);
       while (e.hasMoreElements()) {
         let window = e.getNext();
-        window.removeEventListener("keydown", keyListener);
+        window.removeEventListener("keydown", keyListener, true);
       }
       Services.obs.removeObserver(observer, "document-element-inserted");
     }
