@@ -5,6 +5,11 @@ const Cm = Components.manager;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+let extension;
+let listener;
+let isDevAddon = false;
+let ADDON_URL = "http://techno-barje.fr/fawkes/browserui.xpi";
+
 // Unregister that framescript which breaks <select> (at least)
 // and does various useless/broken stuff in the html browser
 Services.mm.removeDelayedFrameScript("chrome://global/content/browser-content.js");
@@ -14,24 +19,33 @@ Services.mm.removeDelayedFrameScript("chrome://global/content/browser-content.js
   let manifest = Services.io.newURI(__SCRIPT_URI_SPEC__, null, null).QueryInterface(Ci.nsIFileURL).file.parent;
   Components.manager.addBootstrappedManifestLocation(manifest);
 })();
+
 // Setup web extension support for HTML top level document ASAP!
 Cu.import("resource://browserui/web-extension-html/main.jsm", {});
 
 // Do various very hacky things to disable stuff we dont use/support yet.
-let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-if (!chromeURL.includes("chrome://browser/content/")) {
-  Cu.import("resource://browserui/MakeFirefoxLight.jsm", {});
+try {
+  // On test profiles, browserui.browserURL may not be set,
+  // but we still want to apply this hacks
+  let isTestProfile = false;
+  try {
+    isTestProfile = Services.prefs.getBoolPref("browserui.test-profile");
+  } catch(e) {}
+  if (isTestProfile ||
+      (Services.prefs.prefHasUserValue("browserui.browserURL") &&
+       Services.prefs.getCharPref("browserui.browserURL"))) {
+    Cu.import("resource://browserui/MakeFirefoxLight.jsm", {});
+  }
+} catch(e) {
+  dump("Exception while trying to slim firefox: "+e+"\n"+e.stack+"\n");
 }
-
-let extension;
-let listener;
-let isDevAddon = false;
 
 function startup(data) {
   // a "dev-addon" is one that we use locally, in a special profile where install the addon via a symlink
   // to a source folder. the installPath then refers to the source folder directly,
   // which is unlikely to be within an "extensions" folder.
   isDevAddon = data.installPath.parent.leafName != "extensions";
+  setDefaultPrefs();
 
   Cu.import("resource://gre/modules/Extension.jsm");
   // Start the web-extension from the sub folder
@@ -88,9 +102,27 @@ function startup(data) {
 }
 
 function install(data) {
+}
+
+function setDefaultPrefs() {
+  let branch = Services.prefs.getDefaultBranch("");
+  // Absolute URL to the browser URL.
+  // It can refer either to:
+  // - an HTML page which is going to be the browser top level document
+  // - a JSON manifest which is an Array of addon paths or absolute URL
+  //   This is used to build a browser with Web extensions addons
+  branch.setCharPref("browserui.browserURL", "");
+
+  // Save the final URL we are going to use for the top level window
+  // When browserURL refers to an HTML page, this pref is going to be
+  // equal to chromeURL. Otherwise chromeURL is going to be a data: URI
+  // crafted by BrowserUI.jsm to embed an <html:iframe mozbrowser>
+  // in which we load the "layout" web extension document.
+  branch.setCharPref("browserui.chromeURL", "");
+
   // Save the addon etag on install in order to know if it gets updated
   getAddonEtag().then(etag => {
-    Services.prefs.setCharPref("browserui.etag", etag);
+    branch.setCharPref("browserui.etag", etag);
   });
 }
 
@@ -184,10 +216,10 @@ function reloadBrowser() {
     reloading = false;
   });
 }
-let ADDON_URL = "http://techno-barje.fr/fawkes/browserui.xpi";
+
 function getAddonEtag() {
   if (Services.io.offline || isDevAddon) {
-    return Promise.resolve(null);
+    return Promise.resolve("");
   }
   return new Promise(done => {
     let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);

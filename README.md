@@ -6,24 +6,23 @@
 git clone https://github.com/ochameau/fawkes.git
 ```
 
-## How to build'n run
+## How to run from sources
 
+### Developer workflow
+
+This is the suggested way to work on Fawkes codebase.
 ```
 # Checkout sources
 $ git clone https://github.com/ochameau/fawkes.git
 $ cd fawkes/
 
-# Serve browser resources from sources
-$ sudo python -m SimpleHTTPServer 80 &
-  ( or any other way to host this folder on localhost )
-
-# Create a brand new development profile (this is going to wipe the given profile path)
+# Create a fresh development profile (this is going to wipe the given profile path)
 $ ./dev-profile.sh profile
 
 # Download a firefox nightly build
 
 # Run firefox
-$ firefox -profile profile/ http://localhost/
+$ firefox -profile profile/ --browserui-root . --browserui-manifest browsers/web-extension.json
 (You can also pass --jsdebugger to open devtools against the whole browser,
  don't miss the frame switching button on the left of the settings button)
 
@@ -38,6 +37,26 @@ $ firefox -profile profile/ http://localhost/
 # You can open the debugger at any time by pressing Ctrl + Alt + Shift + I
 ```
 
+## Production workflow
+
+For now, web extensions are pushed to a web server.
+The developer workflow doesn't help testing production distribution channel over http.
+```
+# Serve browser resources from sources
+# you need an http server whose root is fawkes folder
+$ sudo python -m SimpleHTTPServer 80 &
+  ( or any other way to host this folder on localhost )
+
+# Create a developer profile
+$ ./dev-profile.sh profile
+
+# Run firefox
+$ firefox -profile profile/ http://localhost/
+
+# Select one of the web extension browser
+# Click "Install" to install it
+```
+
 ## Repo content
 
 - /browsers/
@@ -50,7 +69,7 @@ $ firefox -profile profile/ http://localhost/
 
 - /extensions/
   Web extension Addons, using augmented API compared to Firefox or Chrome addon APIs.
-  Most of these addons are just using chrome.tabs API (https://developer.chrome.com/extensions/tabs).
+  Most of these addons are just using [chrome.tabs API](https://developer.chrome.com/extensions/tabs).
   - tabs
     Tab strip on top. Display tab title, favicon with rounded corner on top of the browser.
     Just the tabs. It doesn't manage the webpage itself.
@@ -62,8 +81,8 @@ $ firefox -profile profile/ http://localhost/
     Suggestion popup which help opening urls that you already visited or bookmarks.
   - deck
     This is the one displaying web pages by using <iframe>. This is using special iframes
-    that regular websites can't use. This is mozbrowser iframe, originaly created for Firefox OS.
-    https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API#The_JavaScript_implementation
+    that regular websites can't use. This is [mozbrowser iframe](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API#The_JavaScript_implementation),
+    originaly created for Firefox OS.
   - layout
     All the previous extensions end up being an HTML document which is loaded in an iframe.
     Most of the extension iframes are created in layout addon. Layout's document ends up being the top level
@@ -123,6 +142,7 @@ $ firefox -profile profile/ http://localhost/
 
 # Browser documents hierarchy
 
+```
 	Layout
 	+-----------------------------------------------------------------------+
 	|-----------------------------------------------------------------------|
@@ -146,6 +166,7 @@ $ firefox -profile profile/ http://localhost/
 	|| ||                                                                  ||
 	|-----------------------------------------------------------------------|
 	+-----------------------------------------------------------------------+
+```
 
 # Story of a tab
 

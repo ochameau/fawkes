@@ -124,7 +124,7 @@ var BrowserUIHandlerFactory = {
         let uri = Services.io.newURI(data.uri, null, null);
         uri.scheme = "http";
         if (uri.host) {
-          BrowserUI.setURIAsDefaultUI(uri.spec);
+          BrowserUI.setBrowser(uri.spec);
         } else { // host is null for browserui://
           BrowserUI.resetUI();
         }

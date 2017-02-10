@@ -7,3 +7,4 @@ platform-addon/jwt.sh
 platform-addon/release.sh
 platform-adon/browsereui.xpi
 release.sh
+update-ublock.sh

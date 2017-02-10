@@ -4,9 +4,7 @@
 
 /**
  * Implement core of custom browser ui, its registration and its startup:
- *  - Update browser.chromeURL to set it to the new browser ui document URL,
- *    (We reuse browser.chromeURL pref, but don't depend on code from toolkit/.
- *     Instead, CommandLine.jsm kicks in earlier during firefox startup)
+ *  - Update browserui.browserURL to set it to the new browser ui document URL or manifest,
  *  - Open the first top level window,
  *  - Catch browser ui document load to augment it in order to make things to work...
  *  - Automatically add browser permission to the browser ui document in order
@@ -31,12 +29,11 @@ function observe(subject, topic, data) {
   if (!window) {
     return;
   }
-  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  if (!subject.location.href.startsWith(chromeURL)) {
+  if (!subject.location.href.startsWith(BrowserUI.chromeURL)) {
     return;
   }
   // Nothing special to do with browser.xul
-  if (chromeURL.includes("chrome://browser/content/")) {
+  if (BrowserUI.chromeURL.includes("chrome://browser/content/")) {
     return;
   }
   // Add a fake gBrowser object, very minimal and non-working,
@@ -56,92 +53,131 @@ function observe(subject, topic, data) {
   }
 }
 
-function setURIAsDefaultUI(uri) {
+function installUIManifest(list, uri) {
+  dump("Install addons:\n" + list.join("\n") + "\n");
+  // Lazy load LightAddons from here, as this JSM is also loaded in child
+  // whereas LightAddons only works in parent.
+  let LightweightAddons = Cu.import("resource://browserui/LightweightAddons.jsm", {});
+  return LightweightAddons.onReady.then(() => {
+    LightweightAddons.reset();
+    list.forEach((url,i) => {
+      // Resolve relative URLs
+      if (!url.startsWith("http")) {
+        url = uri.resolve(url);
+      }
+
+      LightweightAddons.install(url);
+    });
+  });
+}
+
+function setBrowser(uri) {
   uri = Services.io.newURI(uri, null, null);
 
+  // Normalize the url and ignore the call if we are setting the same browser URL
+  let browserURL = Services.prefs.getCharPref("browserui.browserURL");
+  if (browserURL == uri.spec) {
+    return;
+  }
+  Services.prefs.setCharPref("browserui.browserURL", uri.spec);
+
+  startBrowser(uri);
+}
+
+let onWindowOpened = null;
+function startBrowser(uri) {
+  return new Promise(done => {
+    // Detect redirect and uses the final URL
+    let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
+    xhr.open("GET", uri.spec, true);
+    xhr.setRequestHeader("Cache-Control", "no-cache");
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState != 4) return;
+
+      // Detect addon manifest list which is a JSON for an array of addon manifest urls
+      let text = xhr.responseText;
+      if (text.match(/^\s*\[/)) {
+        let list;
+        try {
+          list = JSON.parse(text);
+        } catch(e) {}
+        if (list) {
+          installUIManifest(list, uri);
+          // A "layout" addon should be in that list
+          // and call registerBrowserUI which is going to call setChromeURI
+          onWindowOpened = done;
+          return;
+        }
+      } else {
+        // Do not translate moz-extension URL as they may resolve to unprivileged http uri
+        if (xhr.responseURL != uri.spec && uri.scheme != "moz-extension") {
+          uri = Services.io.newURI(xhr.responseURL, null, null);
+        }
+        setChromeURI(uri);
+      }
+      done();
+    }
+    xhr.send(null);
+  });
+}
+
+function setChromeURI(uri) {
+  dump("setChromeURI("+uri.spec+")\n");
   // Reset permissions and prefs if we are switching from a custom UI
-  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  let wasChrome = chromeURL.startsWith("chrome:");
-  if (Services.prefs.prefHasUserValue("browser.chromeURL")) {
-    let currentUri = Services.io.newURI(chromeURL, null, null);
+  let chromeURL = BrowserUI.chromeURL;
+  let wasChrome = !chromeURL;
+  if (chromeURL) {
     // Ignore the call if we end up setting the same url again
-    if (currentUri.spec == uri.spec) {
+    if (BrowserUI.chromeURL == uri.spec) {
+      checkUIForRefresh(wasChrome);
       return;
     }
-    Permissions.unset(currentUri);
     Preferences.unset();
+    Permissions.unset(chromeURL);
   }
 
-  // Detect redirect and uses the final URL
-  let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
-  xhr.open("GET", uri.spec, false);
-  xhr.setRequestHeader("Cache-Control", "no-cache");
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState != 4) return;
+  Preferences.set(uri);
+  Permissions.set(uri);
+  BrowserUI._chromeURL = uri.spec;
+  Services.prefs.setCharPref("browserui.chromeURL", uri.spec);
 
-    // Detect addon manifest list which is a JSON for an array of addon manifest urls
-    let text = xhr.responseText;
-    if (text.match(/^\s*\[/)) {
-      let list;
-      try {
-        list = JSON.parse(text);
-      } catch(e) {}
-      if (list) {
-        dump("Install addons:\n" + list.join("\n") + "\n");
-        // Lazy load LightAddons from here, as this JSM is also loaded in child LightAddons
-        // only works in parent.
-        let LightweightAddons = Cu.import("resource://browserui/LightweightAddons.jsm", {});
-        LightweightAddons.reset();
-        list.forEach((url,i) => {
-          // Fake an addon id
-          let id = "browserui" + i + "@mozilla.org";
+  checkUIForRefresh(wasChrome);
+}
 
-          // Resolve relative URLs
-          if (!url.startsWith("http")) {
-            url = uri.resolve(url);
-          }
-
-          LightweightAddons.install(id, url);
-        });
-        // Stop here as a "layout" addon should be in that list
-        // and call registerBrowserUI
-        return;
-      }
-    }
-    // Do not translate moz-extension URL as they may resolve to unprivileged http uri
-    if (xhr.responseURL != uri.spec && uri.scheme != "moz-extension") {
-      uri = Services.io.newURI(xhr.responseURL, null, null);
-    }
-
-    Preferences.set(uri);
-    Permissions.set(uri);
-
-    // Restart the browser once the top level document pref is set
-    // only when the browser was already opened, otherwise just open the top level doc
-    let window = Services.wm.getMostRecentWindow(null);
-    if (window) {
-      // If we are switching from browser.xul to any html interface,
-      // we have to reboot to have valid states in web extension code
-      if (wasChrome) {
-        restart(uri);
-      } else {
-        // Otherwise, we can just reload the top level document
-        reloadUI();
-      }
+function checkUIForRefresh(wasChrome) {
+  dump("checkUIForRefresh("+wasChrome+")\n");
+  // Restart the browser once the top level document pref is set
+  // only when the browser was already opened, otherwise just open the top level doc
+  let window = Services.wm.getMostRecentWindow(null);
+  if (window) {
+    // If we are switching from browser.xul to any html interface,
+    // we have to reboot to have valid states in web extension code
+    if (wasChrome) {
+      dump(" >> restart\n");
+      restart();
     } else {
-      // Disable the cache as it may be the first time we load the interface
-      const { WebExtensionProtocolHandlerFactory } = Components.utils.import("resource://webextensions/WebExtensionProtocolHandler.jsm", {});
-      WebExtensionProtocolHandlerFactory.setCache(false);
-      start();
+      dump(" >> reload\n");
+      // Otherwise, we can just reload the top level document
+      reloadUI();
     }
-  };
-
-  xhr.send(null);
+  } else {
+    dump(" >> start\n");
+    // Disable the cache as it may be the first time we load the interface
+    const { WebExtensionProtocolHandlerFactory } = Components.utils.import("resource://webextensions/WebExtensionProtocolHandler.jsm", {});
+    WebExtensionProtocolHandlerFactory.setCache(false);
+    //start();
+    if (BrowserUI.chromeURL) {
+      Services.ww.openWindow(null, BrowserUI.chromeURL, "_blank", "chrome,dialog=no,resizable=yes", null);
+      if (onWindowOpened) {
+        onWindowOpened();
+        onWindowOpened = null;
+      }
+    }
+  }
 }
 
 function resetUI() {
-  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  let currentUri = Services.io.newURI(chromeURL, null, null);
+  let currentUri = Services.io.newURI(BrowserUI.chromeURL, null, null);
   Permissions.unset(currentUri);
   Preferences.unset();
 
@@ -149,10 +185,11 @@ function resetUI() {
   let LightweightAddons = Cu.import("resource://browserui/LightweightAddons.jsm", {});
   LightweightAddons.reset();
 
-  // Preferences.unset should reset back chromeURL pref
-  chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  let uri = Services.io.newURI(chromeURL, null, null);
-  restart(uri);
+  Services.prefs.setCharPref("browserui.browserURL", "");
+  Services.prefs.setCharPref("browserui.chromeURL", "");
+  BrowserUI._chromeURL = "";
+
+  restart();
 }
 
 
@@ -181,7 +218,10 @@ const Permissions = (function() {
     },
 
     unset: function(uri) {
-      kPermissions.forEach(function(name) { remove(uri, name); });
+      // This may throw if the uri didn't got its permissions set
+      try {
+        kPermissions.forEach(function(name) { remove(uri, name); });
+      } catch(e) {}
     }
   }
 })();
@@ -220,38 +260,33 @@ const Preferences = (function() {
   return {
     set: function(uri) {
       kPreferences.forEach(function(preference) { add(preference); });
-      dump("set chromeURL to: "+uri.spec+"\n");
-      Services.prefs.setCharPref("browser.chromeURL", uri.spec);
     },
 
     unset: function() {
       kPreferences.forEach(function(preference) { remove(preference); });
-      Services.prefs.clearUserPref("browser.chromeURL");
     }
   }
 })();
 
-// Open top level browser window
+// Startup the browser
 //
-// Resolves to the DOMWindow object
-// /!\ The top level document is a data: uri crafted in registerBrowserUI
-// This is not the layout addon document.
+// First look into browserui.browserURL pref for the browser manifest
+// which can be a url to an HTML page or a JSON manifest refering to addons.
 function start() {
-  return new Promise(done => {
-    let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-
-    // We have to wait for addons to be ready, as the interface may be made of web extensions...
-    const LightweightAddons = Components.utils.import("resource://browserui/LightweightAddons.jsm", {});
-    Services.startup.enterLastWindowClosingSurvivalArea();
-    LightweightAddons.onReady.then(() => {
-      let window = Services.ww.openWindow(null, chromeURL, "_blank", "chrome,dialog=no,resizable=yes,all", null);
-      Services.startup.exitLastWindowClosingSurvivalArea();
-      done(window);
-    });
+  let browserURL = Services.prefs.getCharPref("browserui.browserURL");
+  if (!browserURL) {
+    return false;
+  }
+  let uri = Services.io.newURI(browserURL, null, null);
+  // Force keeping the browser alive until 'start()' is called an open a top level window
+  Services.startup.enterLastWindowClosingSurvivalArea();
+  startBrowser(uri).then(() => {
+    Services.startup.exitLastWindowClosingSurvivalArea();
   });
+  return true;
 }
 
-function restart(uri) {
+function restart() {
   Services.prefs.savePrefFile(null); 
   Cc["@mozilla.org/toolkit/app-startup;1"]
     .getService(Ci.nsIAppStartup)
@@ -442,12 +477,19 @@ function registerBrowserUI(type, url) {
     newurl += "}</style>" +
               "<iframe mozbrowser=\"true\" src=\"" + url + "\" transparent=\"transparent\" />" + 
               "</html>";
-    setURIAsDefaultUI(newurl);
+
+    let uri = Services.io.newURI(newurl, null, null);
+    setChromeURI(uri);
   }
   Services.obs.notifyObservers(null, "register-browser-ui", type);
 };
 
 var BrowserUI = {
+  _chromeURL: Services.prefs.getCharPref("browserui.chromeURL"),
+  get chromeURL() {
+    return this._chromeURL;
+  },
+
   startup() {
     Services.obs.addObserver(observe, "document-element-inserted", false);
   },
@@ -460,7 +502,10 @@ var BrowserUI = {
 
   registerBrowserUI,
   getAllUIs,
-  setURIAsDefaultUI,
+
+  setBrowser,
+  startBrowser,
+
   resetUI,
   reloadUI,
 };

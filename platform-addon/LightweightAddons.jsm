@@ -17,22 +17,24 @@ let Addons = [];
 let AddonInstances = new Map();
 
 let LightAddons = {
-  install(id, url) {
-    if (AddonInstances.has(id)) {
+  install(url) {
+    if (AddonInstances.has(url)) {
       return;
     }
+    // Fake an addon id
+    let id = "browserui" + Addons.length + "@mozilla.org";
     let data = { id, url };
     let promise = installAddon(data);
     Addons.push(data);
     saveAddonList();
     return promise;
   },
-  uninstall(id) {
-    Addons = Addons.filter(a => a.id != id);
-    let addon = AddonInstances.get(id);
+  uninstall(url) {
+    Addons = Addons.filter(a => a.url != url);
+    let addon = AddonInstances.get(url);
     if (addon) {
       addon.shutdown();
-      AddonInstances.delete(id);
+      AddonInstances.delete(url);
     }
     saveAddonList();
   },
@@ -47,7 +49,6 @@ function saveAddonList() {
 }
 
 function installAddon(addon) {
-  //dump("addon.url="+addon.url+"\n");
   let data = {
     id: addon.id,
     resourceURI: Services.io.newURI(addon.url, null, null)
@@ -65,7 +66,7 @@ var onReady = new Promise(done => {
 
 function startup() {
   try {
-    Addons = JSON.parse(Services.prefs.getCharPref("webextensions.list"));
+    //Addons = JSON.parse(Services.prefs.getCharPref("webextensions.list"));
     if (!Addons || !Array.isArray(Addons)) {
       Addons = [];
     }
@@ -88,6 +89,6 @@ function reset() {
   saveAddonList();
 }
 
-function install(id, url) {
-  LightAddons.install(id, url);
+function install(url) {
+  LightAddons.install(url);
 }

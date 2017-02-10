@@ -20,3 +20,4 @@ echo "pref('toolkit.startup.max_resumed_crashes', -1);" >> $PROFILE/user.js
 echo "pref('devtools.debugger.remote-enabled', true);" >> $PROFILE/user.js
 echo "pref('devtools.chrome.enabled', true);" >> $PROFILE/user.js
 echo "pref('devtools.debugger.prompt-connection', false);" >> $PROFILE/user.js
+echo "pref('browserui.test-profile', true);" >> $PROFILE/user.js

@@ -107,8 +107,8 @@ function showAwesomebar() {
     chrome.browserui.getAll(function (uis) {
       let url = uis["awesomebar"];
       if (url) {
-        let x = window.mozInnerScreenX;
-        let y = window.mozInnerScreenY + window.innerHeight;
+        let x = Math.round(window.mozInnerScreenX);
+        let y = Math.round(window.mozInnerScreenY + window.innerHeight);
         chrome.popup.open(url, window.innerWidth, 200, x, y, id => {
           gotBarId(id);
           chrome.popup.onMessage.addListener(onAwesomebarMessage, id);

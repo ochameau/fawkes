@@ -33,15 +33,21 @@ Remote.prototype = {
       try {
         this.executeTest(cmdLine.resolveFile(testPath));
       } catch(e) {
-        dump(`Exception while trying to execute test at '${testPath}':\n${e}\n${e.fileName}: ${e.lineNumber}\n"`);
+        dump(`Exception while trying to execute test at '${testPath}':\n${e}\n${e.filename}: ${e.lineNumber}\n`);
       }
       cmdLine.preventDefault = true;
       return;
     }
 
-    let chromeURL = Services.prefs.getCharPref('browser.chromeURL');
-    // Do not do anything if we are using original firefox UI
-    if (chromeURL.includes("chrome://browser/content/")) {
+    let rootPath = cmdLine.handleFlagWithParam("browserui-root", true);
+    let manifestPath = cmdLine.handleFlagWithParam("browserui-manifest", true);
+    if (rootPath && manifestPath) {
+      try {
+        this.installUI(cmdLine.resolveFile(rootPath), manifestPath);
+      } catch(e) {
+        dump(`Exception while trying to install ui from '${rootPath}:${manifestPath}':\n${e}\n${e.filename}: ${e.lineNumber}\n"`);
+      }
+      cmdLine.preventDefault = true;
       return;
     }
 
@@ -54,7 +60,10 @@ Remote.prototype = {
 
     // Hand over to this JSM the startup of browserui top level document
     const { BrowserUI } = Components.utils.import("resource://browserui/BrowserUI.jsm", {});
-    BrowserUI.start();
+    // Do not do anything if we are using original firefox UI
+    if (!BrowserUI.start()) {
+      return;
+    }
 
     // Prevent default command line handler to prevent browser/ resources from loading,
     // like nsBrowserGlue, nsBrowserContentHandler, ...
@@ -106,16 +115,67 @@ Remote.prototype = {
       ignoreCache: true
     });
 
-    dump("Test script evaled\n");
     // Wait for all async event to be processed before closing
     // This typically waits for Task/Promises to be completed before quitting!
     let thread = Services.tm.currentThread;
     while (thread.hasPendingEvents()) {
       thread.processNextEvent(true);
     }
-    dump("END OF EXECUTE\n");
+  },
+
+  installUI(root, manifestPath) {
+    if (!root.exists() || !root.isDirectory()) {
+      throw new Error("root directory doesn't exists.");
+    }
+    let manifest = root.clone();
+    manifest.appendRelativePath(manifestPath);
+    if (!manifest.exists()) {
+      throw new Error(`manifest file doesn't exists at ${manifest.path}.`);
+    }
+
+    let rootUrl = Services.io.newFileURI(root);
+    let protocolHandler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+    protocolHandler.setSubstitution("local-browser", rootUrl);
+
+    let resRootUrl = Services.io.newURI("resource://local-browser/", null, null);
+    let manifestUrl = Services.io.newURI(manifestPath, null, resRootUrl);
+    dump("root: "+rootUrl.spec+" manifest:"+manifestUrl.spec+"\n");
+    const { BrowserUI } = Components.utils.import("resource://browserui/BrowserUI.jsm", {});
+    let list = readJSONFile(manifest);
+
+    let done = false;
+    BrowserUI.startBrowser(manifestUrl).then(f => { done = true });
+
+    let thread = Services.tm.currentThread;
+    while (thread.hasPendingEvents()) {
+      thread.processNextEvent(true);
+    }
   }
 };
+
+function parseJsonFromStream(aInputStream) {
+  const json = Cc["@mozilla.org/dom/json;1"].createInstance(Components.interfaces.nsIJSON);
+  const data = json.decodeFromStream(aInputStream, aInputStream.available());
+  return data;
+}
+
+/**
+ * Read a JSON file and return the JS object
+ */
+Cu.import("resource://gre/modules/FileUtils.jsm");
+function readJSONFile(aFile) {
+  let stream = Cc["@mozilla.org/network/file-input-stream;1"].
+               createInstance(Ci.nsIFileInputStream);
+  try {
+    stream.init(aFile, FileUtils.MODE_RDONLY, FileUtils.PERMS_FILE, 0);
+    return parseJsonFromStream(stream, stream.available());
+  } catch (ex) {
+    dump("readJSONFile: Error reading JSON file: " + ex);
+  } finally {
+    stream.close();
+  }
+  return false;
+}
 
 const RemoteFactory = XPCOMUtils.generateNSGetFactory([Remote])(Remote.prototype.classID);
 
