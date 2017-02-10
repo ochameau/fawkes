@@ -34,9 +34,52 @@ function waitForContentLoaded(win) {
     return Promise.resolve(win);
   }
   return new Promise(done => {
-    win.addEventListener("load", done.bind(null, win), { once: true });
+    // Listening on regular DOM event like 'load' doesn't always work
+    // especially on pages coming from http/remote/non-local
+    return new ProgressListener(win, done.bind(null, win));
   });
 }
+
+function ProgressListener(window, callback) {
+  let docShell = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                       .getInterface(Ci.nsIWebNavigation)
+                       .QueryInterface(Ci.nsIDocShell);
+  let webProgress = docShell.QueryInterface(Ci.nsIInterfaceRequestor)
+                            .getInterface(Ci.nsIWebProgress);
+  webProgress.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_WINDOW);
+
+  this.webProgress = webProgress;
+	this.callback = callback;
+}
+
+ProgressListener.prototype = {
+  QueryInterface: XPCOMUtils.generateQI([
+    Ci.nsIWebProgressListener,
+    Ci.nsISupportsWeakReference
+  ]),
+
+  uninstall: function() {
+    this.webProgress.removeProgressListener(this);
+  },
+
+  onStateChange: function(webProgress, request, stateFlags, status) {
+    let {STATE_IS_WINDOW, STATE_STOP, STATE_START} = Ci.nsIWebProgressListener;
+    if (!(stateFlags & STATE_IS_WINDOW)) {
+      return;
+    }
+
+    if ((stateFlags & STATE_STOP) && this.webProgress == webProgress) {
+      this.callback();
+      this.uninstall();
+    }
+  },
+
+  onLocationChange: function() {},
+  onProgressChange: function() {},
+  onStatusChange: function() {},
+  onSecurityChange: function() {},
+};
+
 
 function createHiddenXulWindow() {
   // We need a xul document to be able to create a <xul:panel>...

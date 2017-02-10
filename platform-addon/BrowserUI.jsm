@@ -53,8 +53,8 @@ function observe(subject, topic, data) {
   }
 }
 
-function installUIManifest(list, uri) {
-  dump("Install addons:\n" + list.join("\n") + "\n");
+function installAddons(list, uri) {
+  dump("Install addons:\n" + list.join("\n") + "\nfrom:"+uri.spec+"\n");
   // Lazy load LightAddons from here, as this JSM is also loaded in child
   // whereas LightAddons only works in parent.
   let LightweightAddons = Cu.import("resource://browserui/LightweightAddons.jsm", {});
@@ -104,7 +104,7 @@ function startBrowser(uri, bypassCache) {
           list = JSON.parse(text);
         } catch(e) {}
         if (list) {
-          installUIManifest(list, uri);
+          installAddons(list, uri);
           // A "layout" addon should be in that list
           // and call registerBrowserUI which is going to call setChromeURI
           onWindowOpened = done;
@@ -181,8 +181,10 @@ function checkUIForRefresh(wasChrome) {
 }
 
 function resetUI() {
-  let currentUri = Services.io.newURI(BrowserUI.chromeURL, null, null);
-  Permissions.unset(currentUri);
+  if (BrowserUI.chromeURL) {
+    let currentUri = Services.io.newURI(BrowserUI.chromeURL, null, null);
+    Permissions.unset(currentUri);
+  }
   Preferences.unset();
 
   // Also resets addons as the layout addon is going to restore the browserui pref again
@@ -509,6 +511,7 @@ var BrowserUI = {
 
   setBrowser,
   startBrowser,
+  installAddons,
 
   resetUI,
   reloadUI,
