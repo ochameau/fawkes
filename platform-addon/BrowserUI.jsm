@@ -81,16 +81,18 @@ function setBrowser(uri) {
   }
   Services.prefs.setCharPref("browserui.browserURL", uri.spec);
 
-  startBrowser(uri);
+  startBrowser(uri, true);
 }
 
 let onWindowOpened = null;
-function startBrowser(uri) {
+function startBrowser(uri, bypassCache) {
   return new Promise(done => {
     // Detect redirect and uses the final URL
     let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
     xhr.open("GET", uri.spec, true);
-    xhr.setRequestHeader("Cache-Control", "no-cache");
+    if (bypassCache) {
+      xhr.setRequestHeader("Cache-Control", "no-cache");
+    }
     xhr.onreadystatechange = function () {
       if (xhr.readyState != 4) return;
 
@@ -126,20 +128,26 @@ function setChromeURI(uri) {
   // Reset permissions and prefs if we are switching from a custom UI
   let chromeURL = BrowserUI.chromeURL;
   let wasChrome = !chromeURL;
-  if (chromeURL) {
-    // Ignore the call if we end up setting the same url again
-    if (BrowserUI.chromeURL == uri.spec) {
-      checkUIForRefresh(wasChrome);
-      return;
+  if (chromeURL != uri.spec) {
+    if (chromeURL) {
+      // Ignore the call if we end up setting the same url again
+      if (BrowserUI.chromeURL == uri.spec) {
+        checkUIForRefresh(wasChrome);
+        return;
+      }
+      Preferences.unset();
+      Permissions.unset(chromeURL);
     }
-    Preferences.unset();
-    Permissions.unset(chromeURL);
-  }
 
-  Preferences.set(uri);
-  Permissions.set(uri);
-  BrowserUI._chromeURL = uri.spec;
-  Services.prefs.setCharPref("browserui.chromeURL", uri.spec);
+    Preferences.set(uri);
+    Permissions.set(uri);
+    BrowserUI._chromeURL = uri.spec;
+    Services.prefs.setCharPref("browserui.chromeURL", uri.spec);
+
+    // Disable the cache as it may be the first time we load the interface
+    const { WebExtensionProtocolHandlerFactory } = Components.utils.import("resource://webextensions/WebExtensionProtocolHandler.jsm", {});
+    WebExtensionProtocolHandlerFactory.setCache(false);
+  }
 
   checkUIForRefresh(wasChrome);
 }
@@ -162,10 +170,6 @@ function checkUIForRefresh(wasChrome) {
     }
   } else {
     dump(" >> start\n");
-    // Disable the cache as it may be the first time we load the interface
-    const { WebExtensionProtocolHandlerFactory } = Components.utils.import("resource://webextensions/WebExtensionProtocolHandler.jsm", {});
-    WebExtensionProtocolHandlerFactory.setCache(false);
-    //start();
     if (BrowserUI.chromeURL) {
       Services.ww.openWindow(null, BrowserUI.chromeURL, "_blank", "chrome,dialog=no,resizable=yes", null);
       if (onWindowOpened) {
@@ -280,7 +284,7 @@ function start() {
   let uri = Services.io.newURI(browserURL, null, null);
   // Force keeping the browser alive until 'start()' is called an open a top level window
   Services.startup.enterLastWindowClosingSurvivalArea();
-  startBrowser(uri).then(() => {
+  startBrowser(uri, false).then(() => {
     Services.startup.exitLastWindowClosingSurvivalArea();
   });
   return true;

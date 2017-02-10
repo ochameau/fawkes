@@ -143,8 +143,7 @@ Remote.prototype = {
     const { BrowserUI } = Components.utils.import("resource://browserui/BrowserUI.jsm", {});
     let list = readJSONFile(manifest);
 
-    let done = false;
-    BrowserUI.startBrowser(manifestUrl).then(f => { done = true });
+    BrowserUI.startBrowser(manifestUrl, true);
 
     let thread = Services.tm.currentThread;
     while (thread.hasPendingEvents()) {

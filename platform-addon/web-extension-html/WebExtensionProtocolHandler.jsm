@@ -90,7 +90,10 @@ WebExtensionProtocolHandler.prototype = {
 
     if (WebExtensionProtocolHandlerFactory.cache) {
       ch.loadFlags |= Ci.nsIRequest.LOAD_FROM_CACHE;
-      ch.loadFlags |= Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
+      // This flag will ensure never ever try to load from network,
+      // but if we happen to not load all resources on first startup or Alt+R
+      // it will introduce missing resources
+      //ch.loadFlags |= Ci.nsICachingChannel.LOAD_ONLY_FROM_CACHE;
     } else {
       ch.loadFlags |= Ci.nsIRequest.VALIDATE_ALWAYS;
     }
