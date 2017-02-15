@@ -16,7 +16,9 @@ var {
 // Hack to tweak chrome.tabs Schema and allow passing various other fields in chrome.tabs.update
 var {Management} = Cu.import("resource://gre/modules/Extension.jsm");
 Management.on("startup", () => {
-  let { Schemas } = Cu.import("resource://gre/modules/Schemas.jsm", {});
+  let { FunctionEntry, Schemas } = Cu.import("resource://gre/modules/Schemas.jsm", {});
+  // Compatibility before and after bug 1338409 10/02/2017
+  let tabs = Schemas.namespaces ? Schemas.namespaces.get("tabs") : Schemas.getNamespace("tabs");
   let string = Schemas.parseSchema({
     "type": "string",
   }, [], []);
@@ -26,7 +28,7 @@ Management.on("startup", () => {
   let integer = Schemas.parseSchema({
     "type": "integer",
   }, [], []);
-  let { properties } = Schemas.namespaces.get("tabs").get("update").parameters[1].type;
+  let { properties } = tabs.get("update").parameters[1].type;
   properties.status = {
     type: string,
     optional: "true",
@@ -63,7 +65,7 @@ Management.on("startup", () => {
     description: "Tab unique id over browser sessions."
   };
 
-  properties = Schemas.namespaces.get("tabs").get("create").parameters[0].type.properties;
+  properties = tabs.get("create").parameters[0].type.properties;
   properties.discarded = {
     type: bool,
     optional: "true",
@@ -87,22 +89,50 @@ Management.on("startup", () => {
 
   // Hack two helpers tabs.do(tabId, actionString) and tabs.onAction event
   // to help execute various actions to the tab like go-back/forward, reload, stop loading...
-  Schemas.namespaces.get("tabs").set("do", Schemas.parseFunction(["tabs"], {
-    type: "function",
-    name: "do",
-    parameters: [
-      { type: "integer", name: "tabId", optional: "true" },
-      { type: "string", name: "action" }
-    ]
-  }));
-  Schemas.loadEvent("tabs", {
-    name: "onAction",
-    type: "function",
-    parameters: [
-      { type: "integer", name: "tabId" },
-      { type: "string", name: "action" }
-    ]
-  });
+  if (typeof(Schemas.parseFunction) == "function") {
+    // Pre bug 1338409 10/02/2017
+    tabs.set("do", Schemas.parseFunction(["tabs"], {
+      type: "function",
+      name: "do",
+      parameters: [
+        { type: "integer", name: "tabId", optional: "true" },
+        { type: "string", name: "action" }
+      ]
+    }));
+  } else {
+    let fun = {
+      type: "function",
+      name: "do",
+      parameters: [
+        { type: "integer", name: "tabId", optional: "true" },
+        { type: "string", name: "action" }
+      ]
+    };
+    tabs.functions.get(fun.name).push(fun);
+    tabs.set(fun.name, "functions");
+  }
+  if (typeof(Schemas.loadEvent) == "function") {
+    // Pre bug 1338409 10/02/2017
+    Schemas.loadEvent("tabs", {
+      name: "onAction",
+      type: "function",
+      parameters: [
+        { type: "integer", name: "tabId" },
+        { type: "string", name: "action" }
+      ]
+    });
+  } else {
+    let event = {
+      name: "onAction",
+      type: "function",
+      parameters: [
+        { type: "integer", name: "tabId" },
+        { type: "string", name: "action" }
+      ]
+    };
+    tabs.events.get(event.name).push(event);
+    tabs.set(event.name, "events");
+  }
 });
 
 // Override getSender to support <html:iframe mozbrowser> instead of just <xul:browser>
