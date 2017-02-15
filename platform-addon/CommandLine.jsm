@@ -28,6 +28,19 @@ Remote.prototype = {
 
   handle: function(cmdLine)
   {
+    let jsdebugger = cmdLine.handleFlag("jsdebugger", false);
+    if (jsdebugger) {
+      const { BrowserToolboxProcess } = Cu.import("resource://devtools/client/framework/ToolboxProcess.jsm", {});
+      let loaded = false;
+      BrowserToolboxProcess.init(undefined, () => {loaded = true});
+
+      // Wait for the toolbox to be ready before continuing.
+      let thread = Services.tm.currentThread;
+      while (!loaded) {
+        thread.processNextEvent(true);
+      }
+    }
+
     let testPath = cmdLine.handleFlagWithParam("test", true);
     if (testPath) {
       try {
