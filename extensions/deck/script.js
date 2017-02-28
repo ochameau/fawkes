@@ -22,6 +22,7 @@ const INPROCESS_URLS = [
    , 'about:devtools-toolbox'
    , 'about:downloads'
    , 'about:healthreport'
+   , 'about:memory'
    , 'about:networking'
    , 'about:nightly'
    , 'about:newtab'
