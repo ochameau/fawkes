@@ -47,7 +47,15 @@ WebExtensionProtocolHandler.prototype = {
       return Services.io.newURI(uri, null, null);
     }
     // Absolute urls:
-    var uri = Cc["@mozilla.org/network/standard-url;1"].createInstance(Ci.nsIURI);
+    //var uri = Cc["@mozilla.org/network/standard-url;1"].createInstance(Ci.nsIURI);
+    // Do not use standard-url, but SubstitutingURL from:
+    // http://searchfox.org/mozilla-central/rev/9c1c7106eef137e3413fd867fc1ddfb1d3f6728c/netwerk/protocol/res/SubstitutingProtocolHandler.cpp#29
+    // These URL can be QI to nsIFileURL. This is important to evaluate content script via subScriptLoader,
+    // which only accepts local file url right here:
+    // http://searchfox.org/mozilla-central/rev/9c1c7106eef137e3413fd867fc1ddfb1d3f6728c/js/xpconnect/loader/mozJSSubScriptLoader.cpp#647-663
+    // Unfortunately, this component isn't available on Components.classes as it doesn't has a name
+    // Fortunately, we can still access it via class id!!
+    var uri = Components.classesByID["{dea9657c-18cf-4984-bde9-ccef5d8ab473}"].createInstance(Ci.nsIURI);
     uri.spec = aSpec;
     return uri;
   },
