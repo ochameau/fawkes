@@ -136,20 +136,23 @@ Management.on("startup", () => {
 });
 
 // Override getSender to support <html:iframe mozbrowser> instead of just <xul:browser>
-function getSender(context, target, sender) {
+function getSender(extension, target, sender) {
   // The message was sent from a content script to a <browser> element.
   // We can just get the |tab| from |target|.
   if (target.tagName == "IFRAME") {
     // The message came from a content script.
-    sender.tab = TabManager.convert(context.extension, target);
+    dump("getSender(iframe > "+target+")\n");
+    sender.tab = TabManager.convert(extension, target);
   } else if ("tabId" in sender) {
     // The message came from an ExtensionPage. In that case, it should
     // include a tabId property (which is filled in by the page-open
     // listener below).
-    sender.tab = TabManager.convert(context.extension, TabManager.getTab(sender.tabId));
+    dump("getSender(tabId> "+sender.tabId+")\n");
+    sender.tab = TabManager.convert(extension, TabManager.getTab(sender.tabId));
     delete sender.tabId;
   }
 }
+global.tabGetSender = getSender;
 
 // Hack! To be able to open a URL from chrome code
 // For example, used to make ContentSearch.jsm to be able to open links
