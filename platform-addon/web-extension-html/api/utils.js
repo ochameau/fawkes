@@ -79,9 +79,9 @@ global.TabsState = {
       // Only care about `data` attributes that are in `fields` whitelist
       for(let name of this.fields) {
         // Ignore attribute that are not in the whitelist
-        // but also attributes with null value, which is set by default by webext APIs
-        // We assume that null is never really used explicitely?
-        if ((!(name in data)) || data[name] === null) {
+        // but also attributes with null/undefined value, which is set by default by webext APIs
+        // We assume that null/undefined is never really used explicitely?
+        if ((!(name in data)) || data[name] === null || data[name] === undefined) {
           continue;
         }
         if (data[name] != tab[name]) {
@@ -117,7 +117,7 @@ global.TabsState = {
       }
     }
 
-    //dump("call "+TabsState.listeners.size+" listeners about "+id+"\n");
+    //dump("call "+TabsState.listeners.size+" listeners about "+id+" changed:"+changed+"\n");
     TabsState.listeners.forEach(f => {
       try {
         f(event, id, changed, tab);
